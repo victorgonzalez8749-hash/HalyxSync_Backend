@@ -7,6 +7,7 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import com.halyxsynck.backend.dto.RegisterResponse
 
 fun Route.authRoutes() {
 
@@ -31,21 +32,22 @@ fun Route.authRoutes() {
 
             if (registrado) {
 
-                call.respond(
-                    HttpStatusCode.Created,
-                    mapOf(
-                        "success" to true,
-                        "mensaje" to "Usuario registrado correctamente"
-                    )
-                )
+
+                        call.respond(
+                            HttpStatusCode.Created,
+                            RegisterResponse(
+                                success = true,
+                                mensaje = "Usuario registrado correctamente"
+                            )
+                        )
 
             } else {
 
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    mapOf(
-                        "success" to false,
-                        "mensaje" to "No se pudo registrar el usuario"
+                    RegisterResponse(
+                        success = false,
+                        mensaje = "No se pudo registrar el usuario"
                     )
                 )
 

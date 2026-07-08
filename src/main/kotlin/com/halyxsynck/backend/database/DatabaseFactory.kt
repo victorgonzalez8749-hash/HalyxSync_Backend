@@ -39,7 +39,7 @@ object DatabaseFactory {
 
         transaction {
 
-            SchemaUtils.create(Users)
+            SchemaUtils.createMissingTablesAndColumns(Users)
 
         }
 
