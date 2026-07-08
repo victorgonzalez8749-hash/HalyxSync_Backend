@@ -1,3 +1,4 @@
+
 package com.halyxsynck.backend.dto
 
 import kotlinx.serialization.Serializable

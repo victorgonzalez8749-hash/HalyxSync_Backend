@@ -1,5 +1,6 @@
 package com.halyxsynck.backend.routes
 
+import com.halyxsynck.backend.dto.LoginRequest
 import com.halyxsynck.backend.dto.RegisterRequest
 import com.halyxsynck.backend.repository.AuthRepository
 import io.ktor.http.*
@@ -12,6 +13,15 @@ fun Route.authRoutes() {
     val repository = AuthRepository()
 
     route("/auth") {
+
+        post("/login") {
+
+            val request = call.receive<LoginRequest>()
+
+            val respuesta = repository.login(request)
+
+            call.respond(respuesta)
+        }
 
         post("/register") {
 
