@@ -1,12 +1,14 @@
 package com.halyxsynck.backend.database
 
 import com.halyxsynck.backend.config.DatabaseConfig
+import com.halyxsynck.backend.models.Users
+import com.halyxsynck.backend.models.HistorialMedico
+import com.halyxsynck.backend.models.Medicamentos
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
-import com.halyxsynck.backend.models.Users
 
 object DatabaseFactory {
 
@@ -14,8 +16,7 @@ object DatabaseFactory {
 
         val hikariConfig = HikariConfig().apply {
 
-            jdbcUrl =
-                "jdbc:mysql://${DatabaseConfig.HOST}:${DatabaseConfig.PORT}/${DatabaseConfig.DATABASE}"
+            jdbcUrl = "jdbc:mysql://${DatabaseConfig.HOST}:${DatabaseConfig.PORT}/${DatabaseConfig.DATABASE}"
 
             driverClassName = "com.mysql.cj.jdbc.Driver"
 
@@ -37,13 +38,14 @@ object DatabaseFactory {
 
         Database.connect(dataSource)
 
+        // Crea las 3 tablas si todavía no existen en MySQL
         transaction {
 
-            SchemaUtils.createMissingTablesAndColumns(Users)
+            SchemaUtils.createMissingTablesAndColumns(Users, HistorialMedico, Medicamentos)
 
         }
 
-        println(" Base de datos conectada correctamente.")
+        println("✅ Base de datos conectada correctamente.")
 
     }
 
