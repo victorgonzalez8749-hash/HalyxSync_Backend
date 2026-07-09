@@ -40,7 +40,9 @@ object DatabaseFactory {
 
         // Crea las 3 tablas si todavía no existen en MySQL
         transaction {
-            SchemaUtils.create(Users, HistorialMedico, Medicamentos)
+
+            SchemaUtils.createMissingTablesAndColumns(Users, HistorialMedico, Medicamentos)
+
         }
 
         println("✅ Base de datos conectada correctamente.")
