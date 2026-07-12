@@ -3,6 +3,7 @@ package com.halyxsynck
 import com.halyxsynck.backend.database.DatabaseFactory
 import com.halyxsynck.backend.routes.authRoutes
 import com.halyxsynck.backend.routes.pacienteRoutes
+import com.halyxsynck.backend.routes.citaRoutes
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -19,7 +20,9 @@ fun Application.configureRouting() {
 
         authRoutes()
 
-        pacienteRoutes() // NUEVO
+        pacienteRoutes()
+
+        citaRoutes() // NUEVO
 
     }
 }
