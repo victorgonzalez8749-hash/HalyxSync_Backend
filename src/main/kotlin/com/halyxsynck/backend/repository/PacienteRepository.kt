@@ -6,6 +6,7 @@ import com.halyxsynck.backend.dto.RegistrarHistorialRequest
 import com.halyxsynck.backend.models.HistorialMedico
 import com.halyxsynck.backend.models.Medicamentos
 import com.halyxsynck.backend.models.Users
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
