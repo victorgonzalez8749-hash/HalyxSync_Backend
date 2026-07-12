@@ -4,6 +4,7 @@ import com.halyxsynck.backend.config.DatabaseConfig
 import com.halyxsynck.backend.models.Users
 import com.halyxsynck.backend.models.HistorialMedico
 import com.halyxsynck.backend.models.Medicamentos
+import com.halyxsynck.backend.models.Citas
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
@@ -38,11 +39,8 @@ object DatabaseFactory {
 
         Database.connect(dataSource)
 
-        // Crea las 3 tablas si todavía no existen en MySQL
         transaction {
-
-            SchemaUtils.createMissingTablesAndColumns(Users, HistorialMedico, Medicamentos)
-
+            SchemaUtils.createMissingTablesAndColumns(Users, HistorialMedico, Medicamentos, Citas)
         }
 
         println("✅ Base de datos conectada correctamente.")

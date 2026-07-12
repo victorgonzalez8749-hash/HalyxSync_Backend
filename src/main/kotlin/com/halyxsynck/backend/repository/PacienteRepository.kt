@@ -35,7 +35,8 @@ class PacienteRepository {
                 .map {
                     MedicamentoDto(
                         nombre = it[Medicamentos.nombre],
-                        dosis = it[Medicamentos.dosis]
+                        dosis = it[Medicamentos.dosis],
+                        horario = it[Medicamentos.horario]
                     )
                 }
 

@@ -33,6 +33,8 @@ object Medicamentos : Table("medicamentos") {
 
     val dosis = varchar("dosis", 100) // ej: "500mg cada 8 horas"
 
+    val horario = varchar("horario", 100) // NUEVO: ej. "8:00 AM, 2:00 PM, 8:00 PM"
+
     override val primaryKey = PrimaryKey(id)
 
 }
