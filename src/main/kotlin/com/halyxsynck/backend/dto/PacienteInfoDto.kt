@@ -37,3 +37,13 @@ data class AgendarCitaRequest(
     val hora: String,
     val motivo: String
 )
+
+@Serializable
+data class RegistrarHistorialRequest(
+    val correoPaciente: String,
+    val edad: Int,
+    val padecimientos: List<String>,
+    val medicoAsignado: String,
+    val especialidadMedico: String,
+    val medicamentos: List<MedicamentoDto>
+)
