@@ -44,12 +44,15 @@ class AuthRepository {
 
         } catch (e: Exception) {
 
+            println("===================================")
+            println("ERROR AL REGISTRAR USUARIO")
+            println("Mensaje: ${e.message}")
             e.printStackTrace()
+            println("===================================")
 
             false
 
         }
-
     }
 
     fun login(request: LoginRequest): LoginResponse {
