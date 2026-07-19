@@ -2,17 +2,18 @@ package com.halyxsynck.backend.models
 
 import org.jetbrains.exposed.sql.Table
 
-// Guarda la info médica general de cada paciente
 object HistorialMedico : Table("historial_medico") {
 
     val id = integer("id").autoIncrement()
 
-    // Relación con el paciente (referencia a la tabla Users)
     val pacienteId = integer("paciente_id").references(Users.id)
+
+    // NUEVO: referencia real al doctor
+    val doctorId = integer("doctor_id").references(Users.id).nullable()
 
     val edad = integer("edad")
 
-    val padecimientos = text("padecimientos") // separados por coma, ej: "Diabetes, Hipertensión"
+    val padecimientos = text("padecimientos")
 
     val medicoAsignado = varchar("medico_asignado", 150)
 
@@ -22,7 +23,6 @@ object HistorialMedico : Table("historial_medico") {
 
 }
 
-// Guarda cada medicamento recetado (puede haber varios por paciente)
 object Medicamentos : Table("medicamentos") {
 
     val id = integer("id").autoIncrement()
@@ -31,9 +31,9 @@ object Medicamentos : Table("medicamentos") {
 
     val nombre = varchar("nombre", 100)
 
-    val dosis = varchar("dosis", 100) // ej: "500mg cada 8 horas"
+    val dosis = varchar("dosis", 100)
 
-    val horario = varchar("horario", 100) // NUEVO: ej. "8:00 AM, 2:00 PM, 8:00 PM"
+    val horario = varchar("horario", 100)
 
     override val primaryKey = PrimaryKey(id)
 
