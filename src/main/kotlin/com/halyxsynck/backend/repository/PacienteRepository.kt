@@ -18,7 +18,6 @@ class PacienteRepository {
 
         return transaction {
 
-            // Buscamos al usuario por correo para obtener su id y nombre
             val usuario = Users
                 .selectAll()
                 .where { Users.correo eq correo }
@@ -26,13 +25,11 @@ class PacienteRepository {
 
             val pacienteId = usuario[Users.id]
 
-            // Buscamos su historial médico
             val historial = HistorialMedico
                 .selectAll()
                 .where { HistorialMedico.pacienteId eq pacienteId }
                 .singleOrNull() ?: return@transaction null
 
-            // Buscamos todos sus medicamentos recetados
             val medicamentos = Medicamentos
                 .selectAll()
                 .where { Medicamentos.pacienteId eq pacienteId }
@@ -57,7 +54,6 @@ class PacienteRepository {
 
     }
 
-    // NUEVO: el doctor registra o actualiza el historial de un paciente
     fun registrarHistorial(request: RegistrarHistorialRequest): Boolean {
 
         return try {
@@ -69,15 +65,19 @@ class PacienteRepository {
                     .where { Users.correo eq request.correoPaciente }
                     .singleOrNull() ?: return@transaction false
 
+                val doctor = Users
+                    .selectAll()
+                    .where { Users.correo eq request.correoDoctor }
+                    .singleOrNull()
+
                 val pacienteId = usuario[Users.id]
 
-                // Borramos historial y medicamentos previos de este paciente (si existían)
-                // para reemplazarlos con la info nueva que captura el doctor
                 HistorialMedico.deleteWhere { HistorialMedico.pacienteId eq pacienteId }
                 Medicamentos.deleteWhere { Medicamentos.pacienteId eq pacienteId }
 
                 HistorialMedico.insert {
                     it[HistorialMedico.pacienteId] = pacienteId
+                    it[doctorId] = doctor?.get(Users.id)
                     it[edad] = request.edad
                     it[padecimientos] = request.padecimientos.joinToString(", ")
                     it[medicoAsignado] = request.medicoAsignado
