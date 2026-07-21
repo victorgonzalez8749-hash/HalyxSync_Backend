@@ -44,6 +44,7 @@ class PacienteRepository {
             PacienteInfoResponse(
                 nombreCompleto = "${usuario[Users.nombre]} ${usuario[Users.apellidoPaterno]} ${usuario[Users.apellidoMaterno]}",
                 edad = historial[HistorialMedico.edad],
+                sexo = historial[HistorialMedico.sexo],
                 padecimientos = historial[HistorialMedico.padecimientos].split(",").map { it.trim() },
                 medicoAsignado = historial[HistorialMedico.medicoAsignado],
                 especialidadMedico = historial[HistorialMedico.especialidadMedico],
@@ -79,6 +80,7 @@ class PacienteRepository {
                     it[HistorialMedico.pacienteId] = pacienteId
                     it[doctorId] = doctor?.get(Users.id)
                     it[edad] = request.edad
+                    it[sexo] = request.sexo
                     it[padecimientos] = request.padecimientos.joinToString(", ")
                     it[medicoAsignado] = request.medicoAsignado
                     it[especialidadMedico] = request.especialidadMedico

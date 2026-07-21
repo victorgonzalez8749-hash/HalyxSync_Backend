@@ -8,10 +8,11 @@ object HistorialMedico : Table("historial_medico") {
 
     val pacienteId = integer("paciente_id").references(Users.id)
 
-    // NUEVO: referencia real al doctor
     val doctorId = integer("doctor_id").references(Users.id).nullable()
 
     val edad = integer("edad")
+
+    val sexo = varchar("sexo", 20).default("No especificado")
 
     val padecimientos = text("padecimientos")
 

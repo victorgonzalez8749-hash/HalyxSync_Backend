@@ -26,7 +26,8 @@ class DoctorRepository {
                     PacienteResumenDto(
                         correo = fila[Users.correo],
                         nombreCompleto = "${fila[Users.nombre]} ${fila[Users.apellidoPaterno]}",
-                        edad = fila[HistorialMedico.edad]
+                        edad = fila[HistorialMedico.edad],
+                        sexo = fila[HistorialMedico.sexo]
                     )
                 }
 
