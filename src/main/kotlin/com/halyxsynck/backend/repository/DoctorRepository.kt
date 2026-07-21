@@ -19,17 +19,25 @@ class DoctorRepository {
 
             val doctorId = doctor[Users.id]
 
-            (HistorialMedico innerJoin Users)
+            val historiales = HistorialMedico
                 .selectAll()
                 .where { HistorialMedico.doctorId eq doctorId }
-                .map { fila ->
-                    PacienteResumenDto(
-                        correo = fila[Users.correo],
-                        nombreCompleto = "${fila[Users.nombre]} ${fila[Users.apellidoPaterno]}",
-                        edad = fila[HistorialMedico.edad],
-                        sexo = fila[HistorialMedico.sexo]
-                    )
-                }
+
+            historiales.mapNotNull { fila ->
+
+                val paciente = Users
+                    .selectAll()
+                    .where { Users.id eq fila[HistorialMedico.pacienteId] }
+                    .singleOrNull() ?: return@mapNotNull null
+
+                PacienteResumenDto(
+                    correo = paciente[Users.correo],
+                    nombreCompleto = "${paciente[Users.nombre]} ${paciente[Users.apellidoPaterno]}",
+                    edad = fila[HistorialMedico.edad],
+                    sexo = fila[HistorialMedico.sexo]
+                )
+
+            }
 
         }
 
