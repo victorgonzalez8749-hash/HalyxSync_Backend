@@ -11,6 +11,8 @@ data class LoginResponse(
 
     val nombre: String? = null,
 
-    val rol: String? = null
+    val rol: String? = null,
+
+    val especialidad: String? = null
 
 )

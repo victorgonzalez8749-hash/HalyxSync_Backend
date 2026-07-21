@@ -90,7 +90,8 @@ class AuthRepository {
                             success = true,
                             mensaje = "Bienvenido",
                             nombre = usuario[Users.nombre],
-                            rol = usuario[Users.rol]
+                            rol = usuario[Users.rol],
+                            especialidad = usuario[Users.especialidad]
                         )
 
                     }
