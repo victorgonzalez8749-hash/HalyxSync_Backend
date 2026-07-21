@@ -13,6 +13,7 @@ data class MedicamentoDto(
 data class PacienteInfoResponse(
     val nombreCompleto: String,
     val edad: Int,
+    val sexo: String,
     val padecimientos: List<String>,
     val medicoAsignado: String,
     val especialidadMedico: String,
@@ -43,6 +44,7 @@ data class RegistrarHistorialRequest(
     val correoPaciente: String,
     val correoDoctor: String,
     val edad: Int,
+    val sexo: String,
     val padecimientos: List<String>,
     val medicoAsignado: String,
     val especialidadMedico: String,
@@ -53,5 +55,6 @@ data class RegistrarHistorialRequest(
 data class PacienteResumenDto(
     val correo: String,
     val nombreCompleto: String,
-    val edad: Int
+    val edad: Int,
+    val sexo: String
 )
