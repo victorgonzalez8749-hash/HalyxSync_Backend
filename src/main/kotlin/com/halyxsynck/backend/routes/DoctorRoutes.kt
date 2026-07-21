@@ -26,6 +26,21 @@ fun Route.doctorRoutes() {
 
         }
 
+        get("/estadisticas") {
+
+            val correo = call.request.queryParameters["correo"]
+
+            if (correo == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "Falta el correo"))
+                return@get
+            }
+
+            val totalPacientes = repository.obtenerPacientes(correo).size
+
+            call.respond(mapOf("totalPacientes" to totalPacientes))
+
+        }
+
     }
 
 }
