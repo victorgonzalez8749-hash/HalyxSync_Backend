@@ -1,5 +1,6 @@
 package com.halyxsynck.backend.routes
 
+import com.halyxsynck.backend.dto.AgregarMedicamentoRequest
 import com.halyxsynck.backend.dto.RegistrarHistorialRequest
 import com.halyxsynck.backend.repository.PacienteRepository
 import io.ktor.http.*
@@ -13,7 +14,6 @@ fun Route.pacienteRoutes() {
 
     route("/paciente") {
 
-        // GET /paciente/info?correo=xxx@correo.com
         get("/info") {
 
             val correo = call.request.queryParameters["correo"]
@@ -33,7 +33,6 @@ fun Route.pacienteRoutes() {
 
         }
 
-        // POST /paciente/historial (el doctor registra/actualiza el historial de un paciente)
         post("/historial") {
 
             val request = call.receive<RegistrarHistorialRequest>()
@@ -44,6 +43,21 @@ fun Route.pacienteRoutes() {
                 call.respond(HttpStatusCode.OK, mapOf("mensaje" to "Historial guardado correctamente"))
             } else {
                 call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "No se pudo guardar, verifica el correo del paciente"))
+            }
+
+        }
+
+        // NUEVO: agregar un medicamento sin borrar los existentes
+        post("/medicamento") {
+
+            val request = call.receive<AgregarMedicamentoRequest>()
+
+            val guardado = repository.agregarMedicamento(request)
+
+            if (guardado) {
+                call.respond(HttpStatusCode.OK, mapOf("mensaje" to "Medicamento agregado correctamente"))
+            } else {
+                call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "No se pudo agregar, verifica el correo"))
             }
 
         }

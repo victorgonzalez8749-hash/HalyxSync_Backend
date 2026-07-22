@@ -36,6 +36,11 @@ object Medicamentos : Table("medicamentos") {
 
     val horario = varchar("horario", 100)
 
+    // NUEVO: para el sistema de recetas mejorado
+    val padecimiento = varchar("padecimiento", 150).default("")
+
+    val observaciones = varchar("observaciones", 300).default("")
+
     override val primaryKey = PrimaryKey(id)
 
 }

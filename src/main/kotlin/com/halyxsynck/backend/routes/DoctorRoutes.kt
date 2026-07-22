@@ -29,15 +29,31 @@ fun Route.doctorRoutes() {
         get("/estadisticas") {
 
             val correo = call.request.queryParameters["correo"]
+            val fechaHoy = call.request.queryParameters["fecha"]
 
-            if (correo == null) {
-                call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "Falta el correo"))
+            if (correo == null || fechaHoy == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "Faltan parámetros"))
                 return@get
             }
 
             val totalPacientes = repository.obtenerPacientes(correo).size
+            val citasHoy = repository.obtenerCitasHoyDetalle(correo, fechaHoy).size
 
-            call.respond(mapOf("totalPacientes" to totalPacientes))
+            call.respond(mapOf("totalPacientes" to totalPacientes, "citasHoy" to citasHoy))
+
+        }
+
+        get("/citas-hoy") {
+
+            val correo = call.request.queryParameters["correo"]
+            val fechaHoy = call.request.queryParameters["fecha"]
+
+            if (correo == null || fechaHoy == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "Faltan parámetros"))
+                return@get
+            }
+
+            call.respond(repository.obtenerCitasHoyDetalle(correo, fechaHoy))
 
         }
 

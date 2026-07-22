@@ -1,5 +1,6 @@
 package com.halyxsynck.backend.repository
 
+import com.halyxsynck.backend.dto.AgregarMedicamentoRequest
 import com.halyxsynck.backend.dto.MedicamentoDto
 import com.halyxsynck.backend.dto.PacienteInfoResponse
 import com.halyxsynck.backend.dto.RegistrarHistorialRequest
@@ -37,7 +38,9 @@ class PacienteRepository {
                     MedicamentoDto(
                         nombre = it[Medicamentos.nombre],
                         dosis = it[Medicamentos.dosis],
-                        horario = it[Medicamentos.horario]
+                        horario = it[Medicamentos.horario],
+                        padecimiento = it[Medicamentos.padecimiento],
+                        observaciones = it[Medicamentos.observaciones]
                     )
                 }
 
@@ -73,8 +76,8 @@ class PacienteRepository {
 
                 val pacienteId = usuario[Users.id]
 
+                // Ya NO borramos Medicamentos aquí — solo se actualizan los datos generales
                 HistorialMedico.deleteWhere { HistorialMedico.pacienteId eq pacienteId }
-                Medicamentos.deleteWhere { Medicamentos.pacienteId eq pacienteId }
 
                 HistorialMedico.insert {
                     it[HistorialMedico.pacienteId] = pacienteId
@@ -86,12 +89,15 @@ class PacienteRepository {
                     it[especialidadMedico] = request.especialidadMedico
                 }
 
+                // Si vienen medicamentos en el registro inicial, se agregan (no se borra nada previo)
                 request.medicamentos.forEach { med ->
                     Medicamentos.insert {
                         it[Medicamentos.pacienteId] = pacienteId
                         it[nombre] = med.nombre
                         it[dosis] = med.dosis
                         it[horario] = med.horario
+                        it[padecimiento] = med.padecimiento
+                        it[observaciones] = med.observaciones
                     }
                 }
 
@@ -105,6 +111,38 @@ class PacienteRepository {
 
             false
 
+        }
+
+    }
+
+    // NUEVO: agrega un medicamento sin borrar los existentes
+    fun agregarMedicamento(request: AgregarMedicamentoRequest): Boolean {
+
+        return try {
+
+            transaction {
+
+                val usuario = Users
+                    .selectAll()
+                    .where { Users.correo eq request.correoPaciente }
+                    .singleOrNull() ?: return@transaction false
+
+                Medicamentos.insert {
+                    it[pacienteId] = usuario[Users.id]
+                    it[nombre] = request.medicamento.nombre
+                    it[dosis] = request.medicamento.dosis
+                    it[horario] = request.medicamento.horario
+                    it[padecimiento] = request.medicamento.padecimiento
+                    it[observaciones] = request.medicamento.observaciones
+                }
+
+                true
+
+            }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
 
     }
