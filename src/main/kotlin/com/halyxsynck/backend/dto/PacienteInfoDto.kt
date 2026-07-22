@@ -6,7 +6,9 @@ import kotlinx.serialization.Serializable
 data class MedicamentoDto(
     val nombre: String,
     val dosis: String,
-    val horario: String
+    val horario: String,
+    val padecimiento: String = "",
+    val observaciones: String = ""
 )
 
 @Serializable
@@ -61,4 +63,18 @@ data class PacienteResumenDto(
     val nombreCompleto: String,
     val edad: Int,
     val sexo: String
+)
+
+@Serializable
+data class CitaAgendaDto(
+    val pacienteNombre: String,
+    val edad: Int,
+    val hora: String,
+    val motivo: String
+)
+
+@Serializable
+data class AgregarMedicamentoRequest(
+    val correoPaciente: String,
+    val medicamento: MedicamentoDto
 )
