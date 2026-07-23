@@ -10,8 +10,6 @@ object DatabaseConfig {
 
     const val USER = "root"
 
-   /* const val USER = "root"*/
-
     const val PASSWORD = "aSBaETBXmnhlhSqFANqQEpsAarINcYQA"
 
 }

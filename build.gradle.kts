@@ -1,4 +1,3 @@
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(ktorLibs.plugins.ktor)
@@ -46,5 +45,7 @@ dependencies {
 // JWT
     implementation("io.ktor:ktor-server-auth-jwt:3.2.3")
 
-}
+// Cloudinary (subida de estudios/imágenes)
+    implementation("com.cloudinary:cloudinary-http44:1.36.0")
 
+}

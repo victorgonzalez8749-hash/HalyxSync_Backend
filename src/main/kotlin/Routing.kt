@@ -8,6 +8,7 @@ import com.halyxsynck.backend.routes.doctorRoutes
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import com.halyxsynck.backend.routes.estudioRoutes
 
 fun Application.configureRouting() {
 
@@ -26,6 +27,8 @@ fun Application.configureRouting() {
         citaRoutes() // NUEVO
 
         doctorRoutes() // NUEVO
+
+        estudioRoutes() // NUEVO
 
     }
 }
