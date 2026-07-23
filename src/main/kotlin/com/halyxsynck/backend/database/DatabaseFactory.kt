@@ -5,6 +5,7 @@ import com.halyxsynck.backend.models.Users
 import com.halyxsynck.backend.models.HistorialMedico
 import com.halyxsynck.backend.models.Medicamentos
 import com.halyxsynck.backend.models.Citas
+import com.halyxsynck.backend.models.Estudios
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
@@ -40,7 +41,7 @@ object DatabaseFactory {
         Database.connect(dataSource)
 
         transaction {
-            SchemaUtils.createMissingTablesAndColumns(Users, HistorialMedico, Medicamentos, Citas)
+            SchemaUtils.createMissingTablesAndColumns(Users, HistorialMedico, Medicamentos, Citas, Estudios)
         }
 
         println("✅ Base de datos conectada correctamente.")
