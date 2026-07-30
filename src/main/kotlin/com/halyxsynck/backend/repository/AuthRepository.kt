@@ -5,11 +5,11 @@ import com.halyxsynck.backend.dto.RegisterRequest
 import com.halyxsynck.backend.models.HistorialMedico
 import com.halyxsynck.backend.models.Users
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import com.halyxsynck.backend.dto.LoginRequest
 import com.halyxsynck.backend.dto.LoginResponse
 import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.and
 
 class AuthRepository {
 
@@ -19,7 +19,7 @@ class AuthRepository {
 
             transaction {
 
-                val nuevoId = Users.insert {
+                val insertStatement = Users.insert {
 
                     it[nombre] = request.nombre
                     it[apellidoPaterno] = request.apellidoPaterno
@@ -31,20 +31,19 @@ class AuthRepository {
                     it[cedulaProfesional] = request.cedulaProfesional
                     it[especialidad] = request.especialidad
 
-                } get Users.id
+                }
 
-                // NUEVO: si es paciente y trae padecimientos, se le asigna un doctor automático
+                val nuevoId = insertStatement[Users.id]
+
                 if (request.rol == "PACIENTE" && !request.padecimientos.isNullOrEmpty()) {
 
                     val especialidadSugerida = CatalogoPadecimientos.sugerirEspecialidad(request.padecimientos)
 
-                    // Buscar doctores con esa especialidad
                     val doctoresConEspecialidad = Users
                         .selectAll()
                         .where { (Users.rol eq "DOCTOR") and (Users.especialidad eq especialidadSugerida) }
                         .toList()
 
-                    // Si no hay ninguno con esa especialidad, se toman todos los doctores
                     val candidatos = if (doctoresConEspecialidad.isNotEmpty()) {
                         doctoresConEspecialidad
                     } else {
@@ -53,7 +52,6 @@ class AuthRepository {
 
                     if (candidatos.isNotEmpty()) {
 
-                        // Elegir al doctor con menos pacientes asignados
                         val doctorElegido = candidatos.minByOrNull { fila ->
                             val doctorId = fila[Users.id]
                             HistorialMedico.selectAll().where { HistorialMedico.doctorId eq doctorId }.count()
@@ -130,7 +128,8 @@ class AuthRepository {
                             mensaje = "Bienvenido",
                             nombre = usuario[Users.nombre],
                             rol = usuario[Users.rol],
-                            especialidad = usuario[Users.especialidad]
+                            especialidad = usuario[Users.especialidad],
+                            cedulaProfesional = usuario[Users.cedulaProfesional]
                         )
 
                     }

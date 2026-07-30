@@ -13,6 +13,8 @@ data class LoginResponse(
 
     val rol: String? = null,
 
-    val especialidad: String? = null
+    val especialidad: String? = null,
+
+    val cedulaProfesional: String? = null
 
 )
