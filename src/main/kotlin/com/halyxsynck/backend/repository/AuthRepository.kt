@@ -37,36 +37,42 @@ class AuthRepository {
 
                 if (request.rol == "PACIENTE" && !request.padecimientos.isNullOrEmpty()) {
 
-                    val especialidadSugerida = CatalogoPadecimientos.sugerirEspecialidad(request.padecimientos)
+                    // Agrupamos los padecimientos del paciente por la especialidad que le corresponde a cada uno
+                    val gruposPorEspecialidad = CatalogoPadecimientos.agruparPorEspecialidad(request.padecimientos)
 
-                    val doctoresConEspecialidad = Users
-                        .selectAll()
-                        .where { (Users.rol eq "DOCTOR") and (Users.especialidad eq especialidadSugerida) }
-                        .toList()
+                    // Por cada especialidad distinta, buscamos y asignamos un doctor
+                    for ((especialidadNecesaria, padecimientosDeEsaEspecialidad) in gruposPorEspecialidad) {
 
-                    val candidatos = if (doctoresConEspecialidad.isNotEmpty()) {
-                        doctoresConEspecialidad
-                    } else {
-                        Users.selectAll().where { Users.rol eq "DOCTOR" }.toList()
-                    }
+                        val doctoresConEspecialidad = Users
+                            .selectAll()
+                            .where { (Users.rol eq "DOCTOR") and (Users.especialidad eq especialidadNecesaria) }
+                            .toList()
 
-                    if (candidatos.isNotEmpty()) {
-
-                        val doctorElegido = candidatos.minByOrNull { fila ->
-                            val doctorId = fila[Users.id]
-                            HistorialMedico.selectAll().where { HistorialMedico.doctorId eq doctorId }.count()
+                        val candidatos = if (doctoresConEspecialidad.isNotEmpty()) {
+                            doctoresConEspecialidad
+                        } else {
+                            Users.selectAll().where { Users.rol eq "DOCTOR" }.toList()
                         }
 
-                        if (doctorElegido != null) {
+                        if (candidatos.isNotEmpty()) {
 
-                            HistorialMedico.insert {
-                                it[pacienteId] = nuevoId
-                                it[doctorId] = doctorElegido[Users.id]
-                                it[edad] = request.edad ?: 0
-                                it[sexo] = request.sexo ?: "No especificado"
-                                it[padecimientos] = request.padecimientos.joinToString(", ")
-                                it[medicoAsignado] = "${doctorElegido[Users.nombre]} ${doctorElegido[Users.apellidoPaterno]}"
-                                it[especialidadMedico] = doctorElegido[Users.especialidad] ?: especialidadSugerida
+                            val doctorElegido = candidatos.minByOrNull { fila ->
+                                val doctorId = fila[Users.id]
+                                HistorialMedico.selectAll().where { HistorialMedico.doctorId eq doctorId }.count()
+                            }
+
+                            if (doctorElegido != null) {
+
+                                HistorialMedico.insert {
+                                    it[pacienteId] = nuevoId
+                                    it[doctorId] = doctorElegido[Users.id]
+                                    it[edad] = request.edad ?: 0
+                                    it[sexo] = request.sexo ?: "No especificado"
+                                    it[padecimientos] = padecimientosDeEsaEspecialidad.joinToString(", ")
+                                    it[medicoAsignado] = "${doctorElegido[Users.nombre]} ${doctorElegido[Users.apellidoPaterno]}"
+                                    it[especialidadMedico] = doctorElegido[Users.especialidad] ?: especialidadNecesaria
+                                }
+
                             }
 
                         }

@@ -12,13 +12,18 @@ data class MedicamentoDto(
 )
 
 @Serializable
+data class MedicoAsignadoDto(
+    val nombre: String,
+    val especialidad: String,
+    val padecimientos: List<String>
+)
+
+@Serializable
 data class PacienteInfoResponse(
     val nombreCompleto: String,
     val edad: Int,
     val sexo: String,
-    val padecimientos: List<String>,
-    val medicoAsignado: String,
-    val especialidadMedico: String,
+    val medicos: List<MedicoAsignadoDto>,
     val medicamentos: List<MedicamentoDto>
 )
 
