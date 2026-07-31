@@ -2,12 +2,14 @@ package com.halyxsynck.backend.repository
 
 import com.halyxsynck.backend.dto.AgregarMedicamentoRequest
 import com.halyxsynck.backend.dto.MedicamentoDto
+import com.halyxsynck.backend.dto.MedicoAsignadoDto
 import com.halyxsynck.backend.dto.PacienteInfoResponse
 import com.halyxsynck.backend.dto.RegistrarHistorialRequest
 import com.halyxsynck.backend.models.HistorialMedico
 import com.halyxsynck.backend.models.Medicamentos
 import com.halyxsynck.backend.models.Users
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
@@ -26,10 +28,22 @@ class PacienteRepository {
 
             val pacienteId = usuario[Users.id]
 
-            val historial = HistorialMedico
+            val historiales = HistorialMedico
                 .selectAll()
                 .where { HistorialMedico.pacienteId eq pacienteId }
-                .singleOrNull() ?: return@transaction null
+                .toList()
+
+            if (historiales.isEmpty()) return@transaction null
+
+            val medicos = historiales.map { fila ->
+                MedicoAsignadoDto(
+                    nombre = fila[HistorialMedico.medicoAsignado],
+                    especialidad = fila[HistorialMedico.especialidadMedico],
+                    padecimientos = fila[HistorialMedico.padecimientos].split(",").map { it.trim() }
+                )
+            }
+
+            val primero = historiales.first()
 
             val medicamentos = Medicamentos
                 .selectAll()
@@ -46,11 +60,9 @@ class PacienteRepository {
 
             PacienteInfoResponse(
                 nombreCompleto = "${usuario[Users.nombre]} ${usuario[Users.apellidoPaterno]} ${usuario[Users.apellidoMaterno]}",
-                edad = historial[HistorialMedico.edad],
-                sexo = historial[HistorialMedico.sexo],
-                padecimientos = historial[HistorialMedico.padecimientos].split(",").map { it.trim() },
-                medicoAsignado = historial[HistorialMedico.medicoAsignado],
-                especialidadMedico = historial[HistorialMedico.especialidadMedico],
+                edad = primero[HistorialMedico.edad],
+                sexo = primero[HistorialMedico.sexo],
+                medicos = medicos,
                 medicamentos = medicamentos
             )
 
@@ -75,13 +87,19 @@ class PacienteRepository {
                     .singleOrNull()
 
                 val pacienteId = usuario[Users.id]
+                val doctorIdActual = doctor?.get(Users.id)
 
-                // Ya NO borramos Medicamentos aquí — solo se actualizan los datos generales
-                HistorialMedico.deleteWhere { HistorialMedico.pacienteId eq pacienteId }
+                // Solo borramos el historial que corresponde a ESTE doctor,
+                // sin tocar los registros de otros doctores asignados al mismo paciente
+                if (doctorIdActual != null) {
+                    HistorialMedico.deleteWhere {
+                        (HistorialMedico.pacienteId eq pacienteId) and (HistorialMedico.doctorId eq doctorIdActual)
+                    }
+                }
 
                 HistorialMedico.insert {
                     it[HistorialMedico.pacienteId] = pacienteId
-                    it[doctorId] = doctor?.get(Users.id)
+                    it[doctorId] = doctorIdActual
                     it[edad] = request.edad
                     it[sexo] = request.sexo
                     it[padecimientos] = request.padecimientos.joinToString(", ")
@@ -89,7 +107,6 @@ class PacienteRepository {
                     it[especialidadMedico] = request.especialidadMedico
                 }
 
-                // Si vienen medicamentos en el registro inicial, se agregan (no se borra nada previo)
                 request.medicamentos.forEach { med ->
                     Medicamentos.insert {
                         it[Medicamentos.pacienteId] = pacienteId
@@ -115,7 +132,6 @@ class PacienteRepository {
 
     }
 
-    // NUEVO: agrega un medicamento sin borrar los existentes
     fun agregarMedicamento(request: AgregarMedicamentoRequest): Boolean {
 
         return try {
