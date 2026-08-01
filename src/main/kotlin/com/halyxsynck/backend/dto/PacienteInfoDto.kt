@@ -75,7 +75,8 @@ data class CitaAgendaDto(
     val pacienteNombre: String,
     val edad: Int,
     val hora: String,
-    val motivo: String
+    val motivo: String,
+    val estado: String
 )
 
 @Serializable
