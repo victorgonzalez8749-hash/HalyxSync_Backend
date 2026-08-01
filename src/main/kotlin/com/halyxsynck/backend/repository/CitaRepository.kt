@@ -1,12 +1,15 @@
 package com.halyxsynck.backend.repository
 
 import com.halyxsynck.backend.dto.AgendarCitaRequest
+import com.halyxsynck.backend.dto.CancelarCitaRequest
 import com.halyxsynck.backend.dto.CitaDto
 import com.halyxsynck.backend.models.Citas
 import com.halyxsynck.backend.models.Users
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 
 class CitaRepository {
 
@@ -109,6 +112,29 @@ class CitaRepository {
 
             }
 
+        }
+
+    }
+
+    // NUEVO: cancelar una cita con motivo
+    fun cancelarCita(request: CancelarCitaRequest): Boolean {
+
+        return try {
+
+            transaction {
+
+                val filasActualizadas = Citas.update({ Citas.id eq request.citaId }) {
+                    it[estado] = "Cancelada"
+                    it[motivo] = "Cancelada: ${request.motivoCancelacion}"
+                }
+
+                filasActualizadas > 0
+
+            }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
 
     }

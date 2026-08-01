@@ -100,3 +100,9 @@ data class SubirEstudioRequest(
     val descripcion: String,
     val fecha: String
 )
+
+@Serializable
+data class CancelarCitaRequest(
+    val citaId: Int,
+    val motivoCancelacion: String
+)

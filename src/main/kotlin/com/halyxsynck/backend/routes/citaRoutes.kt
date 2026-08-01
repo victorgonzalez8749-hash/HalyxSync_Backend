@@ -1,6 +1,7 @@
 package com.halyxsynck.backend.routes
 
 import com.halyxsynck.backend.dto.AgendarCitaRequest
+import com.halyxsynck.backend.dto.CancelarCitaRequest
 import com.halyxsynck.backend.repository.CitaRepository
 import io.ktor.http.*
 import io.ktor.server.request.*
@@ -49,6 +50,20 @@ fun Route.citaRoutes() {
             }
 
             call.respond(repository.obtenerCitasDoctor(correo))
+
+        }
+
+        // NUEVO: cancelar cita con motivo
+        post("/cancelar") {
+
+            val request = call.receive<CancelarCitaRequest>()
+            val cancelada = repository.cancelarCita(request)
+
+            if (cancelada) {
+                call.respond(HttpStatusCode.OK, mapOf("mensaje" to "Cita cancelada correctamente"))
+            } else {
+                call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "No se pudo cancelar la cita"))
+            }
 
         }
 

@@ -46,7 +46,6 @@ class DoctorRepository {
 
     }
 
-    // NUEVO: citas de hoy con datos completos del paciente
     fun obtenerCitasHoyDetalle(correoDoctor: String, fechaHoy: String): List<CitaAgendaDto> {
 
         return transaction {
@@ -69,9 +68,10 @@ class DoctorRepository {
                     .where { Users.id eq fila[Citas.pacienteId] }
                     .singleOrNull() ?: return@mapNotNull null
 
+                // FIX: ahora busca el historial de ESTE paciente CON ESTE doctor específico
                 val historial = HistorialMedico
                     .selectAll()
-                    .where { HistorialMedico.pacienteId eq paciente[Users.id] }
+                    .where { (HistorialMedico.pacienteId eq paciente[Users.id]) and (HistorialMedico.doctorId eq doctorId) }
                     .singleOrNull()
 
                 CitaAgendaDto(
