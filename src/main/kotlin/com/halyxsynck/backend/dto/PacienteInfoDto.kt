@@ -81,6 +81,7 @@ data class CitaAgendaDto(
 @Serializable
 data class AgregarMedicamentoRequest(
     val correoPaciente: String,
+    val correoDoctor: String,
     val medicamento: MedicamentoDto
 )
 
