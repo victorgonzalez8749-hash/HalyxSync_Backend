@@ -68,7 +68,6 @@ class DoctorRepository {
                     .where { Users.id eq fila[Citas.pacienteId] }
                     .singleOrNull() ?: return@mapNotNull null
 
-                // FIX: ahora busca el historial de ESTE paciente CON ESTE doctor específico
                 val historial = HistorialMedico
                     .selectAll()
                     .where { (HistorialMedico.pacienteId eq paciente[Users.id]) and (HistorialMedico.doctorId eq doctorId) }
@@ -78,7 +77,8 @@ class DoctorRepository {
                     pacienteNombre = "${paciente[Users.nombre]} ${paciente[Users.apellidoPaterno]}",
                     edad = historial?.get(HistorialMedico.edad) ?: 0,
                     hora = fila[Citas.hora],
-                    motivo = fila[Citas.motivo]
+                    motivo = fila[Citas.motivo],
+                    estado = fila[Citas.estado]
                 )
 
             }.sortedBy { it.hora }
