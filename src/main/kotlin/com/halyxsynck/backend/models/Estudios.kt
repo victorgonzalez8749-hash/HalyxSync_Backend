@@ -8,6 +8,9 @@ object Estudios : Table("estudios") {
 
     val pacienteId = integer("paciente_id").references(Users.id)
 
+    // NUEVO: a qué doctor le mandó el paciente este estudio
+    val doctorId = integer("doctor_id").references(Users.id).nullable()
+
     val url = varchar("url", 500)
 
     val descripcion = varchar("descripcion", 300).default("")
