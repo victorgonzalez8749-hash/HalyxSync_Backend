@@ -33,6 +33,27 @@ fun Route.pacienteRoutes() {
 
         }
 
+        // NUEVO: solo la info que le corresponde a ese doctor
+        get("/info-doctor") {
+
+            val correoPaciente = call.request.queryParameters["correoPaciente"]
+            val correoDoctor = call.request.queryParameters["correoDoctor"]
+
+            if (correoPaciente == null || correoDoctor == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "Faltan parámetros"))
+                return@get
+            }
+
+            val info = repository.obtenerInfoParaDoctor(correoPaciente, correoDoctor)
+
+            if (info == null) {
+                call.respond(HttpStatusCode.NotFound, mapOf("mensaje" to "No se encontró información médica"))
+            } else {
+                call.respond(info)
+            }
+
+        }
+
         post("/historial") {
 
             val request = call.receive<RegistrarHistorialRequest>()
@@ -47,7 +68,6 @@ fun Route.pacienteRoutes() {
 
         }
 
-        // NUEVO: agregar un medicamento sin borrar los existentes
         post("/medicamento") {
 
             val request = call.receive<AgregarMedicamentoRequest>()

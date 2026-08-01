@@ -30,13 +30,15 @@ object Medicamentos : Table("medicamentos") {
 
     val pacienteId = integer("paciente_id").references(Users.id)
 
+    // NUEVO: para que cada doctor solo vea los medicamentos que él recetó
+    val doctorId = integer("doctor_id").references(Users.id).nullable()
+
     val nombre = varchar("nombre", 100)
 
     val dosis = varchar("dosis", 100)
 
     val horario = varchar("horario", 100)
 
-    // NUEVO: para el sistema de recetas mejorado
     val padecimiento = varchar("padecimiento", 150).default("")
 
     val observaciones = varchar("observaciones", 300).default("")

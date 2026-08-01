@@ -70,6 +70,60 @@ class PacienteRepository {
 
     }
 
+    // NUEVO: solo la info que le corresponde a ESTE doctor específico
+    fun obtenerInfoParaDoctor(correoPaciente: String, correoDoctor: String): PacienteInfoResponse? {
+
+        return transaction {
+
+            val paciente = Users
+                .selectAll()
+                .where { Users.correo eq correoPaciente }
+                .singleOrNull() ?: return@transaction null
+
+            val doctor = Users
+                .selectAll()
+                .where { Users.correo eq correoDoctor }
+                .singleOrNull() ?: return@transaction null
+
+            val pacienteId = paciente[Users.id]
+            val doctorId = doctor[Users.id]
+
+            val historial = HistorialMedico
+                .selectAll()
+                .where { (HistorialMedico.pacienteId eq pacienteId) and (HistorialMedico.doctorId eq doctorId) }
+                .singleOrNull() ?: return@transaction null
+
+            val medicamentos = Medicamentos
+                .selectAll()
+                .where { (Medicamentos.pacienteId eq pacienteId) and (Medicamentos.doctorId eq doctorId) }
+                .map {
+                    MedicamentoDto(
+                        nombre = it[Medicamentos.nombre],
+                        dosis = it[Medicamentos.dosis],
+                        horario = it[Medicamentos.horario],
+                        padecimiento = it[Medicamentos.padecimiento],
+                        observaciones = it[Medicamentos.observaciones]
+                    )
+                }
+
+            PacienteInfoResponse(
+                nombreCompleto = "${paciente[Users.nombre]} ${paciente[Users.apellidoPaterno]} ${paciente[Users.apellidoMaterno]}",
+                edad = historial[HistorialMedico.edad],
+                sexo = historial[HistorialMedico.sexo],
+                medicos = listOf(
+                    MedicoAsignadoDto(
+                        nombre = historial[HistorialMedico.medicoAsignado],
+                        especialidad = historial[HistorialMedico.especialidadMedico],
+                        padecimientos = historial[HistorialMedico.padecimientos].split(",").map { it.trim() }
+                    )
+                ),
+                medicamentos = medicamentos
+            )
+
+        }
+
+    }
+
     fun registrarHistorial(request: RegistrarHistorialRequest): Boolean {
 
         return try {
@@ -89,8 +143,6 @@ class PacienteRepository {
                 val pacienteId = usuario[Users.id]
                 val doctorIdActual = doctor?.get(Users.id)
 
-                // Solo borramos el historial que corresponde a ESTE doctor,
-                // sin tocar los registros de otros doctores asignados al mismo paciente
                 if (doctorIdActual != null) {
                     HistorialMedico.deleteWhere {
                         (HistorialMedico.pacienteId eq pacienteId) and (HistorialMedico.doctorId eq doctorIdActual)
@@ -110,6 +162,7 @@ class PacienteRepository {
                 request.medicamentos.forEach { med ->
                     Medicamentos.insert {
                         it[Medicamentos.pacienteId] = pacienteId
+                        it[Medicamentos.doctorId] = doctorIdActual
                         it[nombre] = med.nombre
                         it[dosis] = med.dosis
                         it[horario] = med.horario
@@ -132,6 +185,7 @@ class PacienteRepository {
 
     }
 
+    // NUEVO: ahora recibe correoDoctor, para que el medicamento quede ligado a ese doctor
     fun agregarMedicamento(request: AgregarMedicamentoRequest): Boolean {
 
         return try {
@@ -143,8 +197,14 @@ class PacienteRepository {
                     .where { Users.correo eq request.correoPaciente }
                     .singleOrNull() ?: return@transaction false
 
+                val doctor = Users
+                    .selectAll()
+                    .where { Users.correo eq request.correoDoctor }
+                    .singleOrNull()
+
                 Medicamentos.insert {
                     it[pacienteId] = usuario[Users.id]
+                    it[Medicamentos.doctorId] = doctor?.get(Users.id)
                     it[nombre] = request.medicamento.nombre
                     it[dosis] = request.medicamento.dosis
                     it[horario] = request.medicamento.horario
