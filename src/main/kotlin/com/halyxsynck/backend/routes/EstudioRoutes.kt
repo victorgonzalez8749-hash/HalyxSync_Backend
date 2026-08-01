@@ -19,6 +19,7 @@ fun Route.estudioRoutes() {
 
             val guardado = repository.subirEstudio(
                 request.correoPaciente,
+                request.correoDoctor,
                 request.imagenBase64,
                 request.descripcion,
                 request.fecha
@@ -42,6 +43,21 @@ fun Route.estudioRoutes() {
             }
 
             call.respond(repository.obtenerEstudios(correo))
+
+        }
+
+        // NUEVO: solo los estudios que le mandaron a ese doctor
+        get("/doctor") {
+
+            val correoPaciente = call.request.queryParameters["correoPaciente"]
+            val correoDoctor = call.request.queryParameters["correoDoctor"]
+
+            if (correoPaciente == null || correoDoctor == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "Faltan parámetros"))
+                return@get
+            }
+
+            call.respond(repository.obtenerEstudiosParaDoctor(correoPaciente, correoDoctor))
 
         }
 
