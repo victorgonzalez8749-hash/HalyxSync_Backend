@@ -110,3 +110,33 @@ data class CancelarCitaRequest(
     val citaId: Int,
     val motivoCancelacion: String
 )
+
+@Serializable
+data class MensajeDto(
+    val id: Int,
+    val remitenteCorreo: String,
+    val remitenteNombre: String,
+    val texto: String,
+    val fecha: String,
+    val hora: String,
+    val esMio: Boolean
+)
+
+@Serializable
+data class EnviarMensajeRequest(
+    val correoRemitente: String,
+    val correoDestinatario: String,
+    val texto: String,
+    val fecha: String,
+    val hora: String
+)
+
+@Serializable
+data class ConversacionResumenDto(
+    val correo: String,
+    val nombre: String,
+    val ultimoMensaje: String,
+    val fecha: String,
+    val hora: String,
+    val noLeidos: Int
+)
