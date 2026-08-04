@@ -36,8 +36,14 @@ class PacienteRepository {
             if (historiales.isEmpty()) return@transaction null
 
             val medicos = historiales.map { fila ->
+
+                val correoDoctor = fila[HistorialMedico.doctorId]?.let { docId ->
+                    Users.selectAll().where { Users.id eq docId }.singleOrNull()?.get(Users.correo)
+                } ?: ""
+
                 MedicoAsignadoDto(
                     nombre = fila[HistorialMedico.medicoAsignado],
+                    correo = correoDoctor,
                     especialidad = fila[HistorialMedico.especialidadMedico],
                     padecimientos = fila[HistorialMedico.padecimientos].split(",").map { it.trim() }
                 )
@@ -70,7 +76,6 @@ class PacienteRepository {
 
     }
 
-    // NUEVO: solo la info que le corresponde a ESTE doctor específico
     fun obtenerInfoParaDoctor(correoPaciente: String, correoDoctor: String): PacienteInfoResponse? {
 
         return transaction {
@@ -113,6 +118,7 @@ class PacienteRepository {
                 medicos = listOf(
                     MedicoAsignadoDto(
                         nombre = historial[HistorialMedico.medicoAsignado],
+                        correo = correoDoctor,
                         especialidad = historial[HistorialMedico.especialidadMedico],
                         padecimientos = historial[HistorialMedico.padecimientos].split(",").map { it.trim() }
                     )
@@ -185,7 +191,6 @@ class PacienteRepository {
 
     }
 
-    // NUEVO: ahora recibe correoDoctor, para que el medicamento quede ligado a ese doctor
     fun agregarMedicamento(request: AgregarMedicamentoRequest): Boolean {
 
         return try {
