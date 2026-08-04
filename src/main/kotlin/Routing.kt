@@ -9,6 +9,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import com.halyxsynck.backend.routes.estudioRoutes
+import com.halyxsynck.backend.routes.mensajeRoutes
 
 fun Application.configureRouting() {
 
@@ -24,11 +25,13 @@ fun Application.configureRouting() {
 
         pacienteRoutes()
 
-        citaRoutes() // NUEVO
+        citaRoutes()
 
-        doctorRoutes() // NUEVO
+        doctorRoutes()
 
-        estudioRoutes() // NUEVO
+        estudioRoutes()
+
+        mensajeRoutes() // NUEVO
 
     }
 }
