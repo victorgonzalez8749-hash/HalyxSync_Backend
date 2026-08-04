@@ -14,6 +14,7 @@ data class MedicamentoDto(
 @Serializable
 data class MedicoAsignadoDto(
     val nombre: String,
+    val correo: String,
     val especialidad: String,
     val padecimientos: List<String>
 )
