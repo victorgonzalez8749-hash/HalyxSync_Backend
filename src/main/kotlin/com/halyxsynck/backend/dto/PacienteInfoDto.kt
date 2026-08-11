@@ -140,3 +140,9 @@ data class ConversacionResumenDto(
     val hora: String,
     val noLeidos: Int
 )
+
+@Serializable
+data class CambiarContrasenaRequest(
+    val correo: String,
+    val nuevaContrasena: String
+)
