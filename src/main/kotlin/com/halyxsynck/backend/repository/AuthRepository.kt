@@ -1,6 +1,7 @@
 package com.halyxsynck.backend.repository
 
 import com.halyxsynck.backend.config.CatalogoPadecimientos
+import com.halyxsynck.backend.dto.CambiarContrasenaRequest
 import com.halyxsynck.backend.dto.RegisterRequest
 import com.halyxsynck.backend.models.HistorialMedico
 import com.halyxsynck.backend.models.Users
@@ -10,6 +11,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import com.halyxsynck.backend.dto.LoginRequest
 import com.halyxsynck.backend.dto.LoginResponse
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 
 class AuthRepository {
 
@@ -37,10 +39,8 @@ class AuthRepository {
 
                 if (request.rol == "PACIENTE" && !request.padecimientos.isNullOrEmpty()) {
 
-                    // Agrupamos los padecimientos del paciente por la especialidad que le corresponde a cada uno
                     val gruposPorEspecialidad = CatalogoPadecimientos.agruparPorEspecialidad(request.padecimientos)
 
-                    // Por cada especialidad distinta, buscamos y asignamos un doctor
                     for ((especialidadNecesaria, padecimientosDeEsaEspecialidad) in gruposPorEspecialidad) {
 
                         val doctoresConEspecialidad = Users
@@ -153,6 +153,28 @@ class AuthRepository {
                 mensaje = "Error del servidor"
             )
 
+        }
+
+    }
+
+    // NUEVO: cambiar contraseña
+    fun cambiarContrasena(request: CambiarContrasenaRequest): Boolean {
+
+        return try {
+
+            transaction {
+
+                val filasActualizadas = Users.update({ Users.correo eq request.correo }) {
+                    it[contrasena] = request.nuevaContrasena
+                }
+
+                filasActualizadas > 0
+
+            }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
 
     }

@@ -1,5 +1,6 @@
 package com.halyxsynck.backend.routes
 
+import com.halyxsynck.backend.dto.CambiarContrasenaRequest
 import com.halyxsynck.backend.dto.LoginRequest
 import com.halyxsynck.backend.dto.RegisterRequest
 import com.halyxsynck.backend.repository.AuthRepository
@@ -33,13 +34,13 @@ fun Route.authRoutes() {
             if (registrado) {
 
 
-                        call.respond(
-                            HttpStatusCode.Created,
-                            RegisterResponse(
-                                success = true,
-                                mensaje = "Usuario registrado correctamente"
-                            )
-                        )
+                call.respond(
+                    HttpStatusCode.Created,
+                    RegisterResponse(
+                        success = true,
+                        mensaje = "Usuario registrado correctamente"
+                    )
+                )
 
             } else {
 
@@ -51,6 +52,20 @@ fun Route.authRoutes() {
                     )
                 )
 
+            }
+
+        }
+
+        // NUEVO: cambiar contraseña
+        post("/cambiar-contrasena") {
+
+            val request = call.receive<CambiarContrasenaRequest>()
+            val actualizada = repository.cambiarContrasena(request)
+
+            if (actualizada) {
+                call.respond(HttpStatusCode.OK, mapOf("mensaje" to "Contraseña actualizada correctamente"))
+            } else {
+                call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "No se encontró una cuenta con ese correo"))
             }
 
         }
