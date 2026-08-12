@@ -146,3 +146,11 @@ data class CambiarContrasenaRequest(
     val correo: String,
     val nuevaContrasena: String
 )
+
+@Serializable
+data class RecetaDto(
+    val pacienteCorreo: String,
+    val pacienteNombre: String,
+    val edad: Int,
+    val medicamentos: List<MedicamentoDto>
+)
