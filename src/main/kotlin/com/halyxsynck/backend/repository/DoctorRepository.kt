@@ -1,9 +1,12 @@
 package com.halyxsynck.backend.repository
 
 import com.halyxsynck.backend.dto.CitaAgendaDto
+import com.halyxsynck.backend.dto.MedicamentoDto
 import com.halyxsynck.backend.dto.PacienteResumenDto
+import com.halyxsynck.backend.dto.RecetaDto
 import com.halyxsynck.backend.models.Citas
 import com.halyxsynck.backend.models.HistorialMedico
+import com.halyxsynck.backend.models.Medicamentos
 import com.halyxsynck.backend.models.Users
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
@@ -82,6 +85,60 @@ class DoctorRepository {
                 )
 
             }.sortedBy { it.hora }
+
+        }
+
+    }
+
+    // NUEVO: recetas agrupadas por paciente, con sus medicamentos recetados por este doctor
+    fun obtenerRecetas(correoDoctor: String): List<RecetaDto> {
+
+        return transaction {
+
+            val doctor = Users
+                .selectAll()
+                .where { Users.correo eq correoDoctor }
+                .singleOrNull() ?: return@transaction emptyList()
+
+            val doctorId = doctor[Users.id]
+
+            val historiales = HistorialMedico
+                .selectAll()
+                .where { HistorialMedico.doctorId eq doctorId }
+                .toList()
+
+            historiales.mapNotNull { fila ->
+
+                val pacienteId = fila[HistorialMedico.pacienteId]
+
+                val paciente = Users
+                    .selectAll()
+                    .where { Users.id eq pacienteId }
+                    .singleOrNull() ?: return@mapNotNull null
+
+                val medicamentos = Medicamentos
+                    .selectAll()
+                    .where { (Medicamentos.pacienteId eq pacienteId) and (Medicamentos.doctorId eq doctorId) }
+                    .map {
+                        MedicamentoDto(
+                            nombre = it[Medicamentos.nombre],
+                            dosis = it[Medicamentos.dosis],
+                            horario = it[Medicamentos.horario],
+                            padecimiento = it[Medicamentos.padecimiento],
+                            observaciones = it[Medicamentos.observaciones]
+                        )
+                    }
+
+                if (medicamentos.isEmpty()) return@mapNotNull null
+
+                RecetaDto(
+                    pacienteCorreo = paciente[Users.correo],
+                    pacienteNombre = "${paciente[Users.nombre]} ${paciente[Users.apellidoPaterno]}",
+                    edad = fila[HistorialMedico.edad],
+                    medicamentos = medicamentos
+                )
+
+            }
 
         }
 

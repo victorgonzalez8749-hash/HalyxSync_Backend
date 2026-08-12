@@ -57,6 +57,20 @@ fun Route.doctorRoutes() {
 
         }
 
+        // NUEVO: recetas agrupadas por paciente
+        get("/recetas") {
+
+            val correo = call.request.queryParameters["correo"]
+
+            if (correo == null) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("mensaje" to "Falta el correo del doctor"))
+                return@get
+            }
+
+            call.respond(repository.obtenerRecetas(correo))
+
+        }
+
     }
 
 }
