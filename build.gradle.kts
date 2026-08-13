@@ -48,4 +48,7 @@ dependencies {
 // Cloudinary (subida de estudios/imágenes)
     implementation("com.cloudinary:cloudinary-http44:1.36.0")
 
+// NUEVO: Firebase Admin (notificaciones push)
+    implementation("com.google.firebase:firebase-admin:9.4.1")
+
 }
