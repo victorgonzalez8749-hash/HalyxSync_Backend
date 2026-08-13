@@ -3,25 +3,14 @@ package com.halyxsynck.backend.config
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
-import com.halyxsynck.backend.models.TokensNotificacion
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.ByteArrayInputStream
 import java.io.File
 
 object FirebaseConfig {
 
     fun init() {
+
         try {
-            // 🔥 SOLUCIÓN AL ERROR DE RAILWAY: Crea la tabla automáticamente si no existe en la base de datos
-            try {
-                transaction {
-                    SchemaUtils.create(TokensNotificacion)
-                }
-                println("✅ Validación de tabla 'tokens_notificacion' completada de forma segura.")
-            } catch (sqlEx: Exception) {
-                println("⚠️ Nota de Base de Datos (Puede ser normal si se crea en otro lado): ${sqlEx.message}")
-            }
 
             val credencialesJson = System.getenv("FIREBASE_CREDENTIALS_JSON")
 
@@ -50,5 +39,7 @@ object FirebaseConfig {
         } catch (e: Exception) {
             println("⚠️ No se pudo inicializar Firebase: ${e.message}")
         }
+
     }
+
 }
