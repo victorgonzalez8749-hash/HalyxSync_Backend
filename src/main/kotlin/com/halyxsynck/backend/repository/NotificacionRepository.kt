@@ -1,3 +1,4 @@
+//Corrección
 package com.halyxsynck.backend.repository
 
 import com.halyxsynck.backend.dto.RegistrarTokenRequest
@@ -15,29 +16,36 @@ import org.jetbrains.exposed.sql.transactions.transaction
 class NotificacionRepository {
 
     fun registrarToken(request: RegistrarTokenRequest): Boolean {
+
         return try {
+
             transaction {
+
                 val usuario = Users.selectAll().where { Users.correo eq request.correo }.singleOrNull() ?: return@transaction false
 
-                // 🔥 CORRECCIÓN: Borra el token exacto si ya existía para evitar duplicados,
-                // pero NO borra los tokens de otros teléfonos/tablets del mismo usuario.
+                // Borra el token exacto si ya existía (evita duplicados), sin afectar los tokens de otros dispositivos del mismo usuario
                 TokensNotificacion.deleteWhere { TokensNotificacion.token eq request.token }
 
                 TokensNotificacion.insert {
                     it[usuarioId] = usuario[Users.id]
                     it[token] = request.token
                 }
+
                 true
+
             }
+
         } catch (e: Exception) {
             e.printStackTrace()
             false
         }
+
     }
 
     fun enviarNotificacion(correoDestinatario: String, titulo: String, mensaje: String) {
+
         try {
-            // 🔥 CORRECCIÓN: Obtiene todos los tokens registrados de ese médico (por si usa Android e iOS)
+
             val tokens = transaction {
                 val usuario = Users.selectAll().where { Users.correo eq correoDestinatario }.singleOrNull() ?: return@transaction emptyList()
                 TokensNotificacion.selectAll()
@@ -47,8 +55,8 @@ class NotificacionRepository {
 
             if (tokens.isEmpty()) return
 
-            // Envía la notificación a cada uno de sus dispositivos
-            for (token in tokens) {
+            tokens.forEach { token ->
+
                 val mensajeFcm = Message.builder()
                     .setToken(token)
                     .setNotification(
@@ -57,19 +65,22 @@ class NotificacionRepository {
                             .setBody(mensaje)
                             .build()
                     )
-                    // 🔥 CORRECCIÓN: Payload de datos necesario para despertar apps cerradas/segundo plano
-                    .putAllData(mapOf(
-                        "title" to titulo,
-                        "body" to mensaje,
-                        "click_action" to "FLUTTER_NOTIFICATION_CLICK"
-                    ))
+                    .putAllData(
+                        mapOf(
+                            "title" to titulo,
+                            "body" to mensaje
+                        )
+                    )
                     .build()
 
                 FirebaseMessaging.getInstance().send(mensajeFcm)
+
             }
 
         } catch (e: Exception) {
             e.printStackTrace()
         }
+
     }
+
 }
