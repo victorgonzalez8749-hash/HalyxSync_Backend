@@ -10,10 +10,13 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import com.halyxsynck.backend.routes.estudioRoutes
 import com.halyxsynck.backend.routes.mensajeRoutes
+import com.halyxsynck.backend.config.FirebaseConfig
 
 fun Application.configureRouting() {
 
     DatabaseFactory.init()
+
+    FirebaseConfig.init()
 
     routing {
 
@@ -32,6 +35,7 @@ fun Application.configureRouting() {
         estudioRoutes()
 
         mensajeRoutes() // NUEVO
+
 
     }
 }

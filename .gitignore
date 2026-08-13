@@ -7,3 +7,4 @@ out/
 *.iml
 
 local.properties
+src/main/resources/firebase-service-account.json

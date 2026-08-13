@@ -16,14 +16,20 @@ import org.jetbrains.exposed.sql.update
 
 class MensajeRepository {
 
+    private val notificaciones = NotificacionRepository()
+
     fun enviarMensaje(request: EnviarMensajeRequest): Boolean {
 
         return try {
 
-            transaction {
+            var nombreRemitente = ""
+
+            val resultado = transaction {
 
                 val remitente = Users.selectAll().where { Users.correo eq request.correoRemitente }.singleOrNull() ?: return@transaction false
                 val destinatario = Users.selectAll().where { Users.correo eq request.correoDestinatario }.singleOrNull() ?: return@transaction false
+
+                nombreRemitente = remitente[Users.nombre]
 
                 Mensajes.insert {
                     it[remitenteId] = remitente[Users.id]
@@ -37,6 +43,17 @@ class MensajeRepository {
                 true
 
             }
+
+            if (resultado) {
+                val textoCorto = if (request.texto.length > 60) request.texto.take(60) + "..." else request.texto
+                notificaciones.enviarNotificacion(
+                    request.correoDestinatario,
+                    "Mensaje de $nombreRemitente",
+                    textoCorto
+                )
+            }
+
+            resultado
 
         } catch (e: Exception) {
             e.printStackTrace()

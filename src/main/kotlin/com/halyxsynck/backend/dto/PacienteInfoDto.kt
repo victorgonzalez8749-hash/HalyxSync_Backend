@@ -154,3 +154,9 @@ data class RecetaDto(
     val edad: Int,
     val medicamentos: List<MedicamentoDto>
 )
+
+@Serializable
+data class RegistrarTokenRequest(
+    val correo: String,
+    val token: String
+)

@@ -13,6 +13,8 @@ import org.jetbrains.exposed.sql.update
 
 class CitaRepository {
 
+    private val notificaciones = NotificacionRepository()
+
     fun agendarCita(request: AgendarCitaRequest): Boolean {
 
         return try {
@@ -40,6 +42,16 @@ class CitaRepository {
                 }
 
                 true
+
+            }.also { exito ->
+
+                if (exito) {
+                    notificaciones.enviarNotificacion(
+                        request.correoPaciente,
+                        "Cita agendada",
+                        "Tu cita con ${request.medico} quedó registrada para el ${request.fecha} a las ${request.hora}"
+                    )
+                }
 
             }
 
@@ -121,7 +133,22 @@ class CitaRepository {
 
         return try {
 
+            var correoDoctorParaAvisar: String? = null
+            var nombrePacienteParaAvisar: String = ""
+
             transaction {
+
+                val cita = Citas.selectAll().where { Citas.id eq request.citaId }.singleOrNull()
+                val doctorId = cita?.get(Citas.doctorId)
+                val pacienteId = cita?.get(Citas.pacienteId)
+
+                if (doctorId != null) {
+                    correoDoctorParaAvisar = Users.selectAll().where { Users.id eq doctorId }.singleOrNull()?.get(Users.correo)
+                }
+                if (pacienteId != null) {
+                    val pacienteFila = Users.selectAll().where { Users.id eq pacienteId }.singleOrNull()
+                    nombrePacienteParaAvisar = pacienteFila?.get(Users.nombre) ?: ""
+                }
 
                 val filasActualizadas = Citas.update({ Citas.id eq request.citaId }) {
                     it[estado] = "Cancelada"
@@ -129,6 +156,16 @@ class CitaRepository {
                 }
 
                 filasActualizadas > 0
+
+            }.also { exito ->
+
+                if (exito && correoDoctorParaAvisar != null) {
+                    notificaciones.enviarNotificacion(
+                        correoDoctorParaAvisar!!,
+                        "Cita cancelada",
+                        "$nombrePacienteParaAvisar canceló su cita: ${request.motivoCancelacion}"
+                    )
+                }
 
             }
 
