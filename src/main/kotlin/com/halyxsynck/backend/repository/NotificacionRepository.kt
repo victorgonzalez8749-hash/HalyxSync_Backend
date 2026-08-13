@@ -15,56 +15,61 @@ import org.jetbrains.exposed.sql.transactions.transaction
 class NotificacionRepository {
 
     fun registrarToken(request: RegistrarTokenRequest): Boolean {
-
         return try {
-
             transaction {
-
                 val usuario = Users.selectAll().where { Users.correo eq request.correo }.singleOrNull() ?: return@transaction false
 
-                TokensNotificacion.deleteWhere { TokensNotificacion.usuarioId eq usuario[Users.id] }
+                // 🔥 CORRECCIÓN: Borra el token exacto si ya existía para evitar duplicados,
+                // pero NO borra los tokens de otros teléfonos/tablets del mismo usuario.
+                TokensNotificacion.deleteWhere { TokensNotificacion.token eq request.token }
 
                 TokensNotificacion.insert {
                     it[usuarioId] = usuario[Users.id]
                     it[token] = request.token
                 }
-
                 true
-
             }
-
         } catch (e: Exception) {
             e.printStackTrace()
             false
         }
-
     }
 
     fun enviarNotificacion(correoDestinatario: String, titulo: String, mensaje: String) {
-
         try {
+            // 🔥 CORRECCIÓN: Obtiene todos los tokens registrados de ese médico (por si usa Android e iOS)
+            val tokens = transaction {
+                val usuario = Users.selectAll().where { Users.correo eq correoDestinatario }.singleOrNull() ?: return@transaction emptyList()
+                TokensNotificacion.selectAll()
+                    .where { TokensNotificacion.usuarioId eq usuario[Users.id] }
+                    .map { it[TokensNotificacion.token] }
+            }
 
-            val token = transaction {
-                val usuario = Users.selectAll().where { Users.correo eq correoDestinatario }.singleOrNull() ?: return@transaction null
-                TokensNotificacion.selectAll().where { TokensNotificacion.usuarioId eq usuario[Users.id] }.singleOrNull()?.get(TokensNotificacion.token)
-            } ?: return
+            if (tokens.isEmpty()) return
 
-            val mensajeFcm = Message.builder()
-                .setToken(token)
-                .setNotification(
-                    Notification.builder()
-                        .setTitle(titulo)
-                        .setBody(mensaje)
-                        .build()
-                )
-                .build()
+            // Envía la notificación a cada uno de sus dispositivos
+            for (token in tokens) {
+                val mensajeFcm = Message.builder()
+                    .setToken(token)
+                    .setNotification(
+                        Notification.builder()
+                            .setTitle(titulo)
+                            .setBody(mensaje)
+                            .build()
+                    )
+                    // 🔥 CORRECCIÓN: Payload de datos necesario para despertar apps cerradas/segundo plano
+                    .putAllData(mapOf(
+                        "title" to titulo,
+                        "body" to mensaje,
+                        "click_action" to "FLUTTER_NOTIFICATION_CLICK"
+                    ))
+                    .build()
 
-            FirebaseMessaging.getInstance().send(mensajeFcm)
+                FirebaseMessaging.getInstance().send(mensajeFcm)
+            }
 
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
     }
-
 }
